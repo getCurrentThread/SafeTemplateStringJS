@@ -55,7 +55,7 @@ parseTemplateString 함수는 다음과 같은 기능을 지원합니다.
 
 ## 변수 참조
 
-templateString 내에서 변수를 참조할 때는 \${variableName} 형태로 참조할 수 있습니다. variableName은 data 객체에서 가져올 변수 이름입니다. 변수 이름에는 문자, 숫자, 언더스코어 _, 달러 기호 $를 사용할 수 있습니다. 하지만 변수 이름의 첫 글자는 반드시 문자나 언더스코어여야 합니다.
+templateString 내에서 변수를 참조할 때는 ${variableName} 형태로 참조할 수 있습니다. variableName은 data 객체에서 가져올 변수 이름입니다. 변수 이름에는 문자, 숫자, 언더스코어, 달러 기호를 사용할 수 있습니다. 하지만 변수 이름의 첫 글자는 반드시 문자나 언더스코어여야 합니다.
 
 ```javascript
 const templateString = 'Hello, ${firstName} ${lastName}!';
@@ -75,11 +75,11 @@ const result = parseTemplateString(templateString, data);
 console.log(result); // 'The price is $100.00.'
 ```
 
-위의 예시에서는 currency라는 필터 함수를 적용하여 price 변수의 값을 $100.00과 같은 형태로 변환하였습니다. 필터 함수는 data 객체에 정의되어 있거나, 기본적으로 제공되는 내장 함수들을 사용할 수 있습니다.
+위의 예시에서는 currency라는 필터 함수를 적용하여 price 변수의 값을 \$100.00과 같은 형태로 변환하였습니다. 필터 함수는 data 객체에 정의되어 있거나, 기본적으로 제공되는 내장 함수들을 사용할 수 있습니다.
 
 ## 함수
 
-parseTemplateString 함수는 템플릿 내에서 함수를 호출할 수 있는 기능을 제공합니다. 함수를 호출하려면 ${functionName(arguments)} 형태로 작성해야 합니다. 함수 이름 뒤에 괄호를 사용하여 함수의 인수를 전달할 수 있습니다.
+parseTemplateString 함수는 템플릿 내에서 함수를 호출할 수 있는 기능을 제공합니다. 함수를 호출하려면 \${functionName(arguments)} 형태로 작성해야 합니다. 함수 이름 뒤에 괄호를 사용하여 함수의 인수를 전달할 수 있습니다.
 
 ```javascript
 const templateString = 'The result is ${multiply(a, b)}';
