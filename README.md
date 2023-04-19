@@ -28,11 +28,11 @@ const data = {
   }
 };
 
-const templateString = `
+const templateString = '
   <div>
-    <p>{ greeting(name, 'Hi') | filter }</p>
+    <p>${ greeting(name, 'Hi') | filter }</p>
   </div>
-`;
+';
 
 const result = parseTemplateString(templateString, data);
 console.log(result); // <div><p>HI, ALICE!</p></div>
@@ -42,11 +42,11 @@ console.log(result); // <div><p>HI, ALICE!</p></div>
 
 parseTemplateString 함수는 다음과 같은 기능을 지원합니다.
 
-* 변수: `{ 변수이름 }`
-* 함수: `{ 함수이름(인자1, 인자2, ...) }`
-* 필터: `{ 변수 | 필터이름 }`
+* 변수: `${ 변수이름 }`
+* 함수: `${ 함수이름(인자1, 인자2, ...) }`
+* 필터: `${ 변수 | 필터이름 }`
 
-위의 기능은 중첩하여 사용이 가능합니다 `{ 함수(인자1, 함수(인자2), ...) }`
+위의 기능은 중첩하여 사용이 가능합니다 `${ 함수(인자1, 함수(인자2), ...) }`
 
 ## 주의 사항
 
