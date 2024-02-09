@@ -28,11 +28,11 @@ const data = {
   }
 };
 
-const templateString = '
-  <div>
-    <p>${ greeting(name, 'Hi') | filter }</p>
-  </div>
-';
+const templateString = "\
+  <div>\
+    <p>${ greeting(name, \"Hi\") | filter }</p>\
+  </div>\
+";
 
 const result = parseTemplateString(templateString, data);
 console.log(result); // <div><p>HI, ALICE!</p></div>
