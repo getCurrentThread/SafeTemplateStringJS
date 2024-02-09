@@ -1,32 +1,27 @@
-function parseTemplateString(templateString, data) {
-  const regExp = /\${(.*?)}/g;
-  return templateString.replace(regExp, (match, expression) => {
-    const [propertyName, ...args] = expression.split(/\s*[(,]\s*/);
-    const propertyValue = getProperty(data, propertyName.trim());
-    if (propertyValue === undefined) {
-      return '';
+function applyFiltersAndFunctions(args, propertyValue, data) {
+  for (let arg of args) {
+    if (arg.endsWith(')')) {
+      propertyValue = applyFunction(arg, propertyValue, data);
+    } else {
+      propertyValue = applyFilter(arg, propertyValue, data);
     }
-    if (args[0] !== '') {
-      let result = propertyValue;
-      for (let arg of args) {
-        if (arg.endsWith(')')) {
-          result = applyFunction(result, arg, data);
-        }
-      }
-      return result;
-    }
-    return propertyValue;
-  });
+  }
+  return propertyValue;
 }
 
-function getProperty(data, propertyName) {
-  return data[propertyName];
+function applyFunction(arg, propertyValue, data) {
+  let [funcName, ...funcArgs] = arg.split(/\s*[(,]\s*/);
+  funcName = funcName.trim();
+  funcArgs = parseFunctionArguments(funcArgs, data);
+  const func = data[funcName] || propertyValue[funcName];
+  if (func !== undefined) {
+    propertyValue = func.apply(null, [propertyValue, ...funcArgs]);
+  }
+  return propertyValue;
 }
 
-function applyFunction(value, arg, data) {
-  const [funcName, ...funcArgs] = arg.split(/\s*[(,]\s*/);
-  const trimmedFuncName = funcName.trim();
-  const processedArgs = funcArgs.map(arg => {
+function parseFunctionArguments(funcArgs, data) {
+  return funcArgs.map(arg => {
     if (arg.startsWith('"') && arg.endsWith('"')) {
       return arg.slice(1, -1);
     } else if (arg in data) {
@@ -35,9 +30,28 @@ function applyFunction(value, arg, data) {
       return arg;
     }
   });
-  const func = data[trimmedFuncName] || value[trimmedFuncName];
-  if (func !== undefined) {
-    return func.apply(null, [value, ...processedArgs]);
+}
+
+function applyFilter(arg, propertyValue, data) {
+  const filter = data[arg] || propertyValue[arg];
+  if (filter !== undefined) {
+    propertyValue = filter.apply(null, [propertyValue]);
   }
-  return value;
+  return propertyValue;
+}
+
+function parseTemplateString(templateString, data) {
+  const regExp = /\${(.*?)}/g;
+  return templateString.replace(regExp, (match, expression) => {
+    let [expressionString, filters = ''] = expression.split('|');
+    const [propertyName, ...args] = expressionString.split(/\s*[(,]\s*/);
+    let propertyValue = data[propertyName.trim()];
+    if (propertyValue === undefined) {
+      return '';
+    }
+    if (args[0] !== '') {
+      propertyValue = applyFiltersAndFunctions(args, propertyValue, data);
+    }
+    return propertyValue;
+  });
 }
