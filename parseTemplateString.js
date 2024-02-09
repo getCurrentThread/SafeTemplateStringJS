@@ -1,8 +1,7 @@
 function parseTemplateString(templateString, data) {
   const regExp = /\${(.*?)}/g;
   return templateString.replace(regExp, (match, expression) => {
-    const [expressionString] = expression.split('|');
-    const [propertyName, ...args] = expressionString.split(/\s*[(,]\s*/);
+    const [propertyName, ...args] = expression.split(/\s*[(,]\s*/);
     const propertyValue = getProperty(data, propertyName.trim());
     if (propertyValue === undefined) {
       return '';
