@@ -22,15 +22,12 @@ const data = {
   name: 'Alice',
   greeting: function(name, msg) {
     return `${msg}, ${name}!`;
-  },
-  filter: function(str) {
-    return str.toUpperCase();
   }
 };
 
 const templateString = "\
   <div>\
-    <p>${ greeting(name, \"Hi\") | filter }</p>\
+    <p>${ greeting(name, \"Hi\") }</p>\
   </div>\
 ";
 
@@ -63,19 +60,6 @@ const data = { firstName: 'John', lastName: 'Doe' };
 const result = parseTemplateString(templateString, data);
 console.log(result); // 'Hello, John Doe!'
 ```
-
-## 필터
-(*TODO: 필터는 정상적으로 현재 동작하지 않습니다)
-parseTemplateString 함수는 템플릿 내에서 변수 값에 대해 필터를 적용할 수 있는 기능을 제공합니다. 필터는 | 문자를 사용하여 변수 값 뒤에 붙여서 사용할 수 있습니다. 필터는 함수의 형태로 정의되며, 변수 값에 대해 적용됩니다.
-
-```javascript
-const templateString = 'The price is ${price|currency("$")}.';
-const data = { price: 100 };
-const result = parseTemplateString(templateString, data);
-console.log(result); // 'The price is $100.00.'
-```
-
-위의 예시에서는 currency라는 필터 함수를 적용하여 price 변수의 값을 \$100.00과 같은 형태로 변환하였습니다. 필터 함수는 data 객체에 정의되어 있거나, 기본적으로 제공되는 내장 함수들을 사용할 수 있습니다.
 
 ## 함수
 
