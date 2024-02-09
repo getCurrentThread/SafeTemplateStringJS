@@ -26,9 +26,12 @@ function parseTemplateString(templateString, data) {
             propertyValue = func.apply(null, [propertyValue, ...funcArgs]);
           }
         } else {
-          const filter = data[args[0]] || propertyValue[args[0]];
-          if (filter !== undefined) {
-            propertyValue = filter.apply(null, [propertyValue]);
+          const filterNames = filters.split(',').map(filter => filter.trim());
+          for (let filterName of filterNames) {
+            const filter = data[filterName] || propertyValue[filterName];
+            if (filter !== undefined) {
+              propertyValue = filter.apply(null, [propertyValue]);
+            }
           }
         }
       }
