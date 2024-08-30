@@ -1,91 +1,87 @@
-# parseTemplateString
+# Safe Template String Parser
 
-`parseTemplateString` 함수는 문자열 템플릿을 해석하여 템플릿 내에 포함된 변수를 데이터 객체에서 가져와서 실제 값을 대입한 결과 문자열을 반환합니다. 이는 템플릿 문자열을 직접 구현하는 간단한 예시이며, 템플릿 문자열을 직접 구현해야하는 상황에서 사용할 수 있습니다.
+이 라이브러리는 안전하고 유연한 템플릿 문자열 파싱 및 평가 기능을 제공합니다. 복잡한 수학 표현식, 변수 참조, 함수 호출 등을 지원하며, `eval()` 또는 `new Function()`을 사용하지 않아 보안상 안전합니다.
 
-사용 방법
-`parseTemplateString` 함수는 다음과 같이 사용할 수 있습니다.
+## 주요 기능
+
+- 변수 참조 및 중첩 객체 속성 접근
+- 기본 산술 연산 (+, -, *, /, %, ^)
+- 함수 호출 (min, max, abs, round, floor, ceil)
+- 괄호를 사용한 복잡한 표현식
+- 안전한 평가 (no eval, no new Function)
+
+## 사용 방법
+
+### 1. 라이브러리 가져오기
 
 ```javascript
-const result = parseTemplateString(templateString, data);
+const { parseTemplateString } = require('safe-template-parser');
 ```
 
-`templateString`은 해석하고자 하는 ES6의 템플릿 리터럴 형태의 문자열입니다. {} 안에 변수 이름이나 함수 이름, 필터 이름 등을 적어주면 됩니다.
+### 2. 템플릿 문자열 정의
 
-`data`는 `templateString`에서 사용될 데이터를 담고 있는 객체입니다. 변수 이름이나 함수 이름 등을 `data` 객체에 프로퍼티로 정의해 두어야 합니다.
+템플릿 문자열 내에서 `{{ }}` 를 사용하여 표현식을 작성합니다.
 
-## 예시
+```javascript
+const template = "안녕하세요, {{name}}님. 당신의 나이는 {{age}}세이고, {{address.city}}에 살고 계시네요. " +
+                 "5년 후의 나이는 {{age + 5}}세입니다. " +
+                 "나이의 제곱근은 {{round(abs(age) ^ 0.5)}}입니다.";
+```
 
-다음은 parseTemplateString 함수의 사용 예시입니다.
+### 3. 데이터 객체 준비
+
+템플릿에서 사용할 변수들을 포함하는 데이터 객체를 준비합니다.
 
 ```javascript
 const data = {
-  name: 'Alice',
-  greeting: function(name, msg) {
-    return `${msg}, ${name}!`;
-  },
-  filter: function(str) {
-    return str.toUpperCase();
+  name: "홍길동",
+  age: 30,
+  address: {
+    city: "서울"
   }
 };
-
-const templateString = '
-  <div>
-    <p>${ greeting(name, 'Hi') | filter }</p>
-  </div>
-';
-
-const result = parseTemplateString(templateString, data);
-console.log(result); // <div><p>HI, ALICE!</p></div>
 ```
 
-## 지원하는 기능
+### 4. 템플릿 파싱 및 결과 출력
 
-parseTemplateString 함수는 다음과 같은 기능을 지원합니다.
-
-* 변수: `${ 변수이름 }`
-* 함수: `${ 함수이름(인자1, 인자2, ...) }`
-* 필터: `${ 변수 | 필터이름 }`
-
-위의 기능은 중첩하여 사용이 가능합니다 `${ 함수(인자1, 함수(인자2), ...) }`
-
-## 주의 사항
-
-- `parseTemplateString` 함수에서 사용할 수 있는 변수나 함수 등은 `data` 객체에 미리 정의되어 있어야 합니다.
-- `parseTemplateString` 함수는 기본적으로 **XSS 공격**에 취약합니다. result 값을 HTML에 삽입하기 전에 꼭 필터링하여 사용해야 합니다.
-
-## 변수 참조
-
-templateString 내에서 변수를 참조할 때는 ${variableName} 형태로 참조할 수 있습니다. variableName은 data 객체에서 가져올 변수 이름입니다. 변수 이름에는 문자, 숫자, 언더스코어, 달러 기호를 사용할 수 있습니다. 하지만 변수 이름의 첫 글자는 반드시 문자나 언더스코어여야 합니다.
+`parseTemplateString` 함수를 사용하여 템플릿을 파싱하고 결과를 출력합니다.
 
 ```javascript
-const templateString = 'Hello, ${firstName} ${lastName}!';
-const data = { firstName: 'John', lastName: 'Doe' };
-const result = parseTemplateString(templateString, data);
-console.log(result); // 'Hello, John Doe!'
+const result = parseTemplateString(template, data);
+console.log(result);
 ```
 
-## 필터
+## 지원되는 연산자 및 함수
 
-parseTemplateString 함수는 템플릿 내에서 변수 값에 대해 필터를 적용할 수 있는 기능을 제공합니다. 필터는 | 문자를 사용하여 변수 값 뒤에 붙여서 사용할 수 있습니다. 필터는 함수의 형태로 정의되며, 변수 값에 대해 적용됩니다.
+### 연산자
+- 덧셈: `+`
+- 뺄셈: `-`
+- 곱셈: `*`
+- 나눗셈: `/`
+- 모듈로(나머지): `%`
+- 거듭제곱: `^`
+
+### 함수
+- `min(a, b, ...)`: 최솟값 반환
+- `max(a, b, ...)`: 최댓값 반환
+- `abs(x)`: 절댓값 반환
+- `round(x)`: 반올림
+- `floor(x)`: 내림
+- `ceil(x)`: 올림
+
+## 주의사항
+
+- 템플릿 내의 표현식은 `{{ }}` 안에 작성해야 합니다.
+- 존재하지 않는 변수나 함수를 참조하면 오류가 발생합니다.
+- 보안상의 이유로 사용자 정의 함수는 지원하지 않습니다.
+
+## 에러 처리
+
+파싱 또는 평가 중 오류가 발생하면, 콘솔에 오류 메시지가 출력되고 원래의 표현식이 그대로 반환됩니다.
 
 ```javascript
-const templateString = 'The price is ${price|currency("$")}.';
-const data = { price: 100 };
-const result = parseTemplateString(templateString, data);
-console.log(result); // 'The price is $100.00.'
+const template = "잘못된 표현식: {{ nonexistent_function() }}";
+const result = parseTemplateString(template, {});
+// 결과: "잘못된 표현식: {{ nonexistent_function() }}"
+// 콘솔에 오류 메시지 출력
 ```
-
-위의 예시에서는 currency라는 필터 함수를 적용하여 price 변수의 값을 \$100.00과 같은 형태로 변환하였습니다. 필터 함수는 data 객체에 정의되어 있거나, 기본적으로 제공되는 내장 함수들을 사용할 수 있습니다.
-
-## 함수
-
-parseTemplateString 함수는 템플릿 내에서 함수를 호출할 수 있는 기능을 제공합니다. 함수를 호출하려면 \${functionName(arguments)} 형태로 작성해야 합니다. 함수 이름 뒤에 괄호를 사용하여 함수의 인수를 전달할 수 있습니다.
-
-```javascript
-const templateString = 'The result is ${multiply(a, b)}';
-const data = { a: 10, b: 5, multiply: (a, b) => a * b }
-const result = parseTemplateString(termplateString, data);
-console.log(result); // 'The result is 50'
-```
-
-위의 예시에서는 multiply 라는 함수를 정의하여 a와 b 변수의 값을 곱한 반환값으로 나타내었습니다. 이 때에 해당 함수는 data 객체에 정의되어 있거나, 기본적으로 제공되는 내장 함수들을 사용할 수 있습니다.
