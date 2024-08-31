@@ -1,0 +1,87 @@
+name: Minify JavaScript and Upload to Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  minify-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: npm install terser
+
+      - name: Minify JavaScript
+        run: |
+          npx terser safe-template-parser.js \
+            --compress passes=2,dead_code=true,conditionals=true,evaluate=true,booleans=true,loops=true,unused=true,hoist_funs=false,keep_fargs=true,hoist_vars=false,if_return=true,join_vars=true,side_effects=true,warnings=false \
+            --mangle \
+            --output safe-template-parser.min.js
+
+      - name: Calculate file sizes
+        id: sizes
+        run: |
+          ORIGINAL_SIZE=$(wc -c < safe-template-parser.js)
+          MINIFIED_SIZE=$(wc -c < safe-template-parser.min.js)
+          COMPRESSION_RATIO=$(LC_NUMERIC=C printf "%.2f" $(echo "scale=2; $MINIFIED_SIZE / $ORIGINAL_SIZE * 100" | bc))
+          echo "ORIGINAL_SIZE=$ORIGINAL_SIZE" >> $GITHUB_OUTPUT
+          echo "MINIFIED_SIZE=$MINIFIED_SIZE" >> $GITHUB_OUTPUT
+          echo "COMPRESSION_RATIO=$COMPRESSION_RATIO" >> $GITHUB_OUTPUT
+
+      - name: Get commit messages
+        id: get_commits
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # If there's no previous tag, get all commit messages
+            COMMIT_MESSAGES=$(git log --pretty=format:"- %s" --reverse)
+          else
+            # Get commit messages since the previous tag
+            COMMIT_MESSAGES=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s" --reverse)
+          fi
+          echo "COMMIT_MESSAGES<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MESSAGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release:
+            ${{ steps.get_commits.outputs.COMMIT_MESSAGES }}
+
+            Minified version of safe-template-parser.js
+
+            Original size: ${{ steps.sizes.outputs.ORIGINAL_SIZE }} bytes
+            Minified size: ${{ steps.sizes.outputs.MINIFIED_SIZE }} bytes
+            Compression ratio: ${{ steps.sizes.outputs.COMPRESSION_RATIO }}%
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./safe-template-parser.min.js
+          asset_name: safe-template-parser.min.js
+          asset_content_type: application/javascript
