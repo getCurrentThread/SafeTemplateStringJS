@@ -4,7 +4,10 @@ class TokenType {
   static OPERATOR = "OPERATOR";
   static LEFT_PAREN = "LEFT_PAREN";
   static RIGHT_PAREN = "RIGHT_PAREN";
+  static LEFT_BRACKET = "LEFT_BRACKET";
+  static RIGHT_BRACKET = "RIGHT_BRACKET";
   static COMMA = "COMMA";
+  static DOT = "DOT";
   static EOF = "EOF";
 }
 
@@ -39,8 +42,14 @@ class Lexer {
       return new Token(TokenType.LEFT_PAREN, this.advance());
     } else if (char === ")") {
       return new Token(TokenType.RIGHT_PAREN, this.advance());
+    } else if (char === "[") {
+      return new Token(TokenType.LEFT_BRACKET, this.advance());
+    } else if (char === "]") {
+      return new Token(TokenType.RIGHT_BRACKET, this.advance());
     } else if (char === ",") {
       return new Token(TokenType.COMMA, this.advance());
+    } else if (char === ".") {
+      return new Token(TokenType.DOT, this.advance());
     }
 
     throw new Error(`Unexpected character: ${char}`);
@@ -56,7 +65,7 @@ class Lexer {
 
   readIdentifier() {
     let result = "";
-    while (this.position < this.input.length && (this.isAlpha(this.input[this.position]) || this.isDigit(this.input[this.position]) || this.input[this.position] === ".")) {
+    while (this.position < this.input.length && (this.isAlpha(this.input[this.position]) || this.isDigit(this.input[this.position]))) {
       result += this.advance();
     }
     return new Token(TokenType.IDENTIFIER, result);
@@ -154,12 +163,7 @@ class Parser {
       this.eat(TokenType.NUMBER);
       return { type: "Number", value: token.value };
     } else if (this.currentToken.type === TokenType.IDENTIFIER) {
-      const token = this.currentToken;
-      this.eat(TokenType.IDENTIFIER);
-      if (this.currentToken.type === TokenType.LEFT_PAREN) {
-        return this.functionCall(token.value);
-      }
-      return { type: "Variable", name: token.value };
+      return this.variable();
     } else if (this.currentToken.type === TokenType.LEFT_PAREN) {
       this.eat(TokenType.LEFT_PAREN);
       const node = this.expression();
@@ -170,11 +174,49 @@ class Parser {
     throw new Error(`Unexpected token: ${this.currentToken.value}`);
   }
 
+  variable() {
+    let node = { type: "Variable", name: this.currentToken.value };
+    this.eat(TokenType.IDENTIFIER);
+
+    if (this.currentToken.type === TokenType.LEFT_PAREN) {
+      return this.functionCall(node.name);
+    }
+
+    while (
+      this.currentToken.type === TokenType.LEFT_BRACKET ||
+      this.currentToken.type === TokenType.DOT
+    ) {
+      if (this.currentToken.type === TokenType.LEFT_BRACKET) {
+        node = this.arrayAccess(node);
+      } else {
+        this.eat(TokenType.DOT);
+        if (this.currentToken.type !== TokenType.IDENTIFIER) {
+          throw new Error("Expected property name after '.'");
+        }
+        node = {
+          type: "PropertyAccess",
+          object: node,
+          property: this.currentToken.value
+        };
+        this.eat(TokenType.IDENTIFIER);
+      }
+    }
+
+    return node;
+  }
+
   functionCall(name) {
     this.eat(TokenType.LEFT_PAREN);
     const args = this.argumentList();
     this.eat(TokenType.RIGHT_PAREN);
     return { type: "FunctionCall", name: name, arguments: args };
+  }
+
+  arrayAccess(node) {
+    this.eat(TokenType.LEFT_BRACKET);
+    const index = this.expression();
+    this.eat(TokenType.RIGHT_BRACKET);
+    return { type: "ArrayAccess", array: node, index: index };
   }
 
   argumentList() {
@@ -219,8 +261,32 @@ class Interpreter {
       return this.visitUnaryOp(node);
     } else if (node.type === "FunctionCall") {
       return this.visitFunctionCall(node);
+    } else if (node.type === "ArrayAccess") {
+      return this.visitArrayAccess(node);
+    } else if (node.type === "PropertyAccess") {
+      return this.visitPropertyAccess(node);
     }
     throw new Error(`Unknown node type: ${node.type}`);
+  }
+
+  visitArrayAccess(node) {
+    const arr = this.visit(node.array);
+    const index = this.visit(node.index);
+    if (Array.isArray(arr)) {
+      if (index < 0 || index >= arr.length) {
+        throw new Error(`Array index out of bounds: ${index}`);
+      }
+      return arr[index];
+    }
+    throw new Error(`${JSON.stringify(arr)} is not an array`);
+  }
+
+  visitPropertyAccess(node) {
+    const obj = this.visit(node.object);
+    if (obj && typeof obj === 'object' && obj.hasOwnProperty(node.property)) {
+      return obj[node.property];
+    }
+    throw new Error(`Cannot access property '${node.property}' of ${JSON.stringify(obj)}`);
   }
 
   visitBinaryOp(node) {
@@ -314,17 +380,19 @@ function parseTemplateString(templateString, data) {
 //   "10년 전의 나이는 {{age - 10}}세였습니다. " +
 //   "나이를 2배로 하면 {{age * 2}}세입니다. " +
 //   "나이의 제곱근은 {{round(abs(age) ^ 0.5)}}입니다. " +
-//   "당신과 친구들 중 가장 나이가 많은 사람은 {{max(age, friendAge1, friendAge2)}}세입니다.";
-//
+//   "당신과 친구들 중 가장 나이가 많은 사람은 {{max(age, friends[0].age, friends[1].age)}}세입니다.";
+
 // const data = {
 //   name: "홍길동",
 //   age: 30,
 //   address: {
 //     city: "서울",
 //   },
-//   friendAge1: 28,
-//   friendAge2: 35,
+//   friends: [
+//     { name: "김철수", age: 28 }, 
+//     { name: "이영희", age: 35 }
+//   ],
 // };
-//
+
 // const result = parseTemplateString(template, data);
 // console.log(result);
