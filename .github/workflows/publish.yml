@@ -27,7 +27,7 @@ jobs:
       - name: Minify JavaScript
         run: |
           npx terser safe-template-parser.js \
-            --compress passes=3,pure_getters,keep_fargs=false,unsafe=true,unsafe_comps=true,unsafe_math=true,unsafe_proto=true,unsafe_regexp=true,conditionals=true,evaluate=true,booleans=true,loops=true,unused=true,hoist_funs=true,keep_fargs=false,hoist_vars=true,if_return=true,join_vars=true,cascade=true,side_effects=true,warnings=false,drop_console=true,drop_debugger=true,ecma=2015,toplevel=true \
+            --compress passes=3,pure_getters=true,keep_fargs=false,unsafe=true,unsafe_comps=true,unsafe_math=true,unsafe_proto=true,unsafe_regexp=true,conditionals=true,evaluate=true,booleans=true,loops=true,unused=true,hoist_funs=true,keep_fargs=false,hoist_vars=true,if_return=true,join_vars=true,drop_console=true,drop_debugger=true,ecma=2015,toplevel=true \
             --mangle reserved=['parseTemplateString'] \
             --output safe-template-parser.min.js
 

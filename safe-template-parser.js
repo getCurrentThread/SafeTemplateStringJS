@@ -1,24 +1,24 @@
 const TokenType = Object.freeze({
-  NUMBER: Symbol('NUMBER'),
-  IDENTIFIER: Symbol('IDENTIFIER'),
-  OPERATOR: Symbol('OPERATOR'),
-  LEFT_PAREN: Symbol('LEFT_PAREN'),
-  RIGHT_PAREN: Symbol('RIGHT_PAREN'),
-  LEFT_BRACKET: Symbol('LEFT_BRACKET'),
-  RIGHT_BRACKET: Symbol('RIGHT_BRACKET'),
-  COMMA: Symbol('COMMA'),
-  DOT: Symbol('DOT'),
-  EOF: Symbol('EOF')
+  NUMBER: Symbol("NUMBER"),
+  IDENTIFIER: Symbol("IDENTIFIER"),
+  OPERATOR: Symbol("OPERATOR"),
+  LEFT_PAREN: Symbol("LEFT_PAREN"),
+  RIGHT_PAREN: Symbol("RIGHT_PAREN"),
+  LEFT_BRACKET: Symbol("LEFT_BRACKET"),
+  RIGHT_BRACKET: Symbol("RIGHT_BRACKET"),
+  COMMA: Symbol("COMMA"),
+  DOT: Symbol("DOT"),
+  EOF: Symbol("EOF"),
 });
 
 const ASTNodeType = Object.freeze({
-  NUMBER: Symbol('NUMBER'),
-  VARIABLE: Symbol('VARIABLE'),
-  BINARY_OP: Symbol('BINARY_OP'),
-  UNARY_OP: Symbol('UNARY_OP'),
-  FUNCTION_CALL: Symbol('FUNCTION_CALL'),
-  ARRAY_ACCESS: Symbol('ARRAY_ACCESS'),
-  PROPERTY_ACCESS: Symbol('PROPERTY_ACCESS')
+  NUMBER: Symbol("NUMBER"),
+  VARIABLE: Symbol("VARIABLE"),
+  BINARY_OP: Symbol("BINARY_OP"),
+  UNARY_OP: Symbol("UNARY_OP"),
+  FUNCTION_CALL: Symbol("FUNCTION_CALL"),
+  ARRAY_ACCESS: Symbol("ARRAY_ACCESS"),
+  PROPERTY_ACCESS: Symbol("PROPERTY_ACCESS"),
 });
 
 class Token {
@@ -42,16 +42,25 @@ class Lexer {
 
     const char = this.input[this.position];
 
-    if (this.isDigit(char)) {return this.readNumber();} 
-    else if (this.isAlpha(char)) {return this.readIdentifier();} 
-    else if (this.isOperator(char)) {return new Token(TokenType.OPERATOR, this.advance());}
-    else if (char === "(") {return new Token(TokenType.LEFT_PAREN, this.advance());}
-    else if (char === ")") {return new Token(TokenType.RIGHT_PAREN, this.advance());}
-    else if (char === "[") {return new Token(TokenType.LEFT_BRACKET, this.advance());}
-    else if (char === "]") {return new Token(TokenType.RIGHT_BRACKET, this.advance());}
-    else if (char === ",") {return new Token(TokenType.COMMA, this.advance());}
-    else if (char === ".") {return new Token(TokenType.DOT, this.advance());
- }
+    if (this.isDigit(char)) {
+      return this.readNumber();
+    } else if (this.isAlpha(char)) {
+      return this.readIdentifier();
+    } else if (this.isOperator(char)) {
+      return new Token(TokenType.OPERATOR, this.advance());
+    } else if (char === "(") {
+      return new Token(TokenType.LEFT_PAREN, this.advance());
+    } else if (char === ")") {
+      return new Token(TokenType.RIGHT_PAREN, this.advance());
+    } else if (char === "[") {
+      return new Token(TokenType.LEFT_BRACKET, this.advance());
+    } else if (char === "]") {
+      return new Token(TokenType.RIGHT_BRACKET, this.advance());
+    } else if (char === ",") {
+      return new Token(TokenType.COMMA, this.advance());
+    } else if (char === ".") {
+      return new Token(TokenType.DOT, this.advance());
+    }
 
     throw new Error(`Unexpected character: ${char}`);
   }
@@ -183,10 +192,7 @@ class Parser {
       return this.functionCall(node.name);
     }
 
-    while (
-      this.currentToken.type === TokenType.LEFT_BRACKET ||
-      this.currentToken.type === TokenType.DOT
-    ) {
+    while (this.currentToken.type === TokenType.LEFT_BRACKET || this.currentToken.type === TokenType.DOT) {
       if (this.currentToken.type === TokenType.LEFT_BRACKET) {
         node = this.arrayAccess(node);
       } else {
@@ -197,7 +203,7 @@ class Parser {
         node = {
           type: ASTNodeType.PROPERTY_ACCESS,
           object: node,
-          property: this.currentToken.value
+          property: this.currentToken.value,
         };
         this.eat(TokenType.IDENTIFIER);
       }
@@ -253,14 +259,22 @@ class Interpreter {
 
   visit(node) {
     switch (node.type) {
-      case ASTNodeType.NUMBER: return node.value;
-      case ASTNodeType.VARIABLE: return this.getValueFromData(node.name, this.data);
-      case ASTNodeType.BINARY_OP: return this.visitBinaryOp(node);
-      case ASTNodeType.UNARY_OP: return this.visitUnaryOp(node);
-      case ASTNodeType.FUNCTION_CALL: return this.visitFunctionCall(node);
-      case ASTNodeType.ARRAY_ACCESS: return this.visitArrayAccess(node);
-      case ASTNodeType.PROPERTY_ACCESS: return this.visitPropertyAccess(node);
-      default: throw new Error(`Unknown node type: ${node.type}`);
+      case ASTNodeType.NUMBER:
+        return node.value;
+      case ASTNodeType.VARIABLE:
+        return this.getValueFromData(node.name, this.data);
+      case ASTNodeType.BINARY_OP:
+        return this.visitBinaryOp(node);
+      case ASTNodeType.UNARY_OP:
+        return this.visitUnaryOp(node);
+      case ASTNodeType.FUNCTION_CALL:
+        return this.visitFunctionCall(node);
+      case ASTNodeType.ARRAY_ACCESS:
+        return this.visitArrayAccess(node);
+      case ASTNodeType.PROPERTY_ACCESS:
+        return this.visitPropertyAccess(node);
+      default:
+        throw new Error(`Unknown node type: ${node.type}`);
     }
   }
 
@@ -278,7 +292,7 @@ class Interpreter {
 
   visitPropertyAccess(node) {
     const obj = this.visit(node.object);
-    if (obj && typeof obj === 'object' && obj.hasOwnProperty(node.property)) {
+    if (obj && typeof obj === "object" && obj.hasOwnProperty(node.property)) {
       return obj[node.property];
     }
     throw new Error(`Cannot access property '${node.property}' of ${JSON.stringify(obj)}`);
@@ -288,35 +302,52 @@ class Interpreter {
     const left = this.visit(node.left);
     const right = this.visit(node.right);
     switch (node.op) {
-      case "+": return left + right;
-      case "-": return left - right;
-      case "*": return left * right;
-      case "/": return left / right;
-      case "%": return left % right;
-      case "^": return Math.pow(left, right);
-      default: throw new Error(`Unknown operator: ${node.op}`);
+      case "+":
+        return left + right;
+      case "-":
+        return left - right;
+      case "*":
+        return left * right;
+      case "/":
+        return left / right;
+      case "%":
+        return left % right;
+      case "^":
+        return Math.pow(left, right);
+      default:
+        throw new Error(`Unknown operator: ${node.op}`);
     }
   }
 
   visitUnaryOp(node) {
     const expr = this.visit(node.expr);
     switch (node.op) {
-      case "+": return +expr;
-      case "-": return -expr;
-      default: throw new Error(`Unknown unary operator: ${node.op}`);
+      case "+":
+        return +expr;
+      case "-":
+        return -expr;
+      default:
+        throw new Error(`Unknown unary operator: ${node.op}`);
     }
   }
 
   visitFunctionCall(node) {
     const args = node.arguments.map((arg) => this.visit(arg));
     switch (node.name.toLowerCase()) {
-      case "min": return Math.min(...args);
-      case "max": return Math.max(...args);
-      case "abs": return Math.abs(args[0]);
-      case "round": return Math.round(args[0]);
-      case "floor": return Math.floor(args[0]);
-      case "ceil": return Math.ceil(args[0]);
-      default: throw new Error(`Unknown function: ${node.name}`);
+      case "min":
+        return Math.min(...args);
+      case "max":
+        return Math.max(...args);
+      case "abs":
+        return Math.abs(args[0]);
+      case "round":
+        return Math.round(args[0]);
+      case "floor":
+        return Math.floor(args[0]);
+      case "ceil":
+        return Math.ceil(args[0]);
+      default:
+        throw new Error(`Unknown function: ${node.name}`);
     }
   }
 
@@ -334,7 +365,7 @@ class Interpreter {
   }
 }
 
-function parseTemplateString(templateString, data) {
+export function parseTemplateString(templateString, data) {
   const regex = /\{\{(.+?)\}\}/g;
 
   return templateString.replace(regex, (match, expression) => {
@@ -367,7 +398,7 @@ function parseTemplateString(templateString, data) {
 //     city: "서울",
 //   },
 //   friends: [
-//     { name: "김철수", age: 28 }, 
+//     { name: "김철수", age: 28 },
 //     { name: "이영희", age: 35 }
 //   ],
 // };
