@@ -1,0 +1,31 @@
+{
+  "name": "safe-template-parser",
+  "version": "1.0.0",
+  "description": "A safe template string parser for JavaScript",
+  "main": "safe-template-parser.js",
+  "module": "safe-template-parser.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests available\" && exit 0",
+    "build": "npx terser safe-template-parser.js -o safe-template-parser.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getCurrentThread/SafeTemplateStringJS.git"
+  },
+  "keywords": [
+    "template",
+    "parser",
+    "template-string",
+    "safe"
+  ],
+  "author": "getCurrentThread",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/getCurrentThread/SafeTemplateStringJS/issues"
+  },
+  "homepage": "https://github.com/getCurrentThread/SafeTemplateStringJS#readme",
+  "devDependencies": {
+    "terser": "^5.19.0"
+  }
+}

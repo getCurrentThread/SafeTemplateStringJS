@@ -365,7 +365,7 @@ class Interpreter {
   }
 }
 
-export function parseTemplateString(templateString, data) {
+function parseTemplateString(templateString, data) {
   const regex = /\{\{(.+?)\}\}/g;
 
   return templateString.replace(regex, (match, expression) => {
@@ -381,6 +381,26 @@ export function parseTemplateString(templateString, data) {
     }
   });
 }
+
+// Support for both CommonJS and ES modules
+if (typeof module !== 'undefined' && module.exports) {
+  // CommonJS
+  module.exports = { parseTemplateString };
+} else if (typeof exports !== 'undefined') {
+  // CommonJS (alternative)
+  exports.parseTemplateString = parseTemplateString;
+} else if (typeof define === 'function' && define.amd) {
+  // AMD
+  define([], function() {
+    return { parseTemplateString };
+  });
+} else if (typeof window !== 'undefined') {
+  // Browser global
+  window.parseTemplateString = parseTemplateString;
+}
+
+// ES modules
+export { parseTemplateString };
 
 // // 사용 예시
 // const template =

@@ -2,6 +2,18 @@
 
 이 라이브러리는 안전하고 유연한 템플릿 문자열 파싱 및 평가 기능을 제공합니다. 복잡한 수학 표현식, 변수 참조, 함수 호출, 배열 인덱싱 등을 지원하며, `eval()` 또는 `new Function()`을 사용하지 않아 보안상 안전합니다.
 
+## 설치
+
+### npm을 통한 설치
+
+```bash
+npm install safe-template-parser
+```
+
+### 직접 다운로드
+
+최신 릴리스에서 `safe-template-parser.min.js` 파일을 다운로드하여 프로젝트에 포함할 수 있습니다.
+
 ## 주요 기능
 
 - 변수 참조 및 중첩 객체 속성 접근
@@ -16,6 +28,10 @@
 ### 1. 라이브러리 가져오기
 
 ```javascript
+// ESM
+import { parseTemplateString } from 'safe-template-parser';
+
+// CommonJS
 const { parseTemplateString } = require('safe-template-parser');
 ```
 
