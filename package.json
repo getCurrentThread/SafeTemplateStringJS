@@ -1,6 +1,6 @@
 {
   "name": "safe-template-parser",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A safe template string parser for JavaScript",
   "main": "safe-template-parser.js",
   "module": "safe-template-parser.js",
