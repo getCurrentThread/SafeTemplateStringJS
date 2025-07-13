@@ -1,0 +1,173 @@
+import { Lexer, Parser, Interpreter, TokenType, ASTNodeType } from '../safe-template-parser.js';
+
+export const basicTests = [
+  {
+    name: "String Literal Test",
+    expression: "'world'",
+    data: {},
+    expected: "world",
+  },
+  {
+    name: "String with concatenation",
+    expression: "'Hello, ' + name",
+    data: { name: "John" },
+    expected: "Hello, John",
+  },
+  {
+    name: "Accessing property with string literal",
+    expression: "address['city']",
+    data: { address: { city: "Seoul" } },
+    expected: "Seoul",
+  },
+  {
+    name: "Comparison Test (== true)",
+    expression: "10 == 10",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Comparison Test (== false)",
+    expression: "10 == 5",
+    data: {},
+    expected: false,
+  },
+  {
+    name: "Comparison Test (!= true)",
+    expression: "10 != 5",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Comparison Test (> true)",
+    expression: "10 > 5",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Comparison Test (<= false)",
+    expression: "10 <= 5",
+    data: {},
+    expected: false,
+  },
+  {
+    name: "String Comparison Test",
+    expression: "'hello' == 'hello'",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Number Arithmetic Test",
+    expression: "5 + 3 * 2 - 1",
+    data: {},
+    expected: 10,
+  },
+  {
+    name: "String Concatenation Test",
+    expression: "'Hello' + ' ' + 'World'",
+    data: {},
+    expected: "Hello World",
+  },
+  {
+    name: "Type Coercion Comparison Test (number to string)",
+    expression: "1 == '1'",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Type Coercion Comparison Test (boolean to number)",
+    expression: "true == 1",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Negative Number Arithmetic",
+    expression: "-5 + 10",
+    data: {},
+    expected: 5,
+  },
+  {
+    name: "Floating Point Arithmetic",
+    expression: "1.5 * 2.5",
+    data: {},
+    expected: 3.75,
+  },
+  {
+    name: "Modulo Operator",
+    expression: "10 % 3",
+    data: {},
+    expected: 1,
+  },
+  {
+    name: "Exponentiation with Negative Base",
+    expression: "-2 ^ 3",
+    data: {},
+    expected: -8,
+  },
+  {
+    name: "Strict Equality (===)",
+    expression: "1 === '1'",
+    data: {},
+    expected: false,
+  },
+  {
+    name: "Strict Inequality (!==)",
+    expression: "1 !== 1",
+    data: {},
+    expected: false,
+  },
+  {
+    name: "Complex expression with variables",
+    expression: "(price * quantity) + tax",
+    data: { price: 10, quantity: 5, tax: 2 },
+    expected: 52,
+  },
+  {
+    name: "Division by zero",
+    expression: "10 / 0",
+    data: {},
+    expected: Infinity,
+  },
+  {
+    name: "Negative exponentiation",
+    expression: "2 ^ -1",
+    data: {},
+    expected: 0.5,
+  },
+  // New tests
+  {
+    name: "Chained Comparison (less than)",
+    expression: "1 < 2 < 3",
+    data: {},
+    expected: true,
+  },
+  {
+    name: "Chained Comparison (greater than)",
+    expression: "3 > 2 > 1",
+    data: {},
+    expected: false,
+  },
+  {
+    name: "Parenthesized expression",
+    expression: "(5 + 3) * 2",
+    data: {},
+    expected: 16,
+  },
+  {
+    name: "Unary plus operator",
+    expression: "+'10'",
+    data: {},
+    expected: 10,
+  },
+  {
+    name: "Unary minus operator",
+    expression: "-5",
+    data: {},
+    expected: -5,
+  },
+  {
+    name: "Boolean literal true",
+    expression: "true",
+    data: {},
+    expected: true,
+  },
+];

@@ -19,8 +19,12 @@ npm install safe-template-parser
 - 변수 참조 및 중첩 객체 속성 접근
 - 배열 인덱싱 및 배열 요소의 속성 접근
 - 기본 산술 연산 (+, -, *, /, %, ^)
+- 비교 연산 (==, !=, <, <=, >, >=, ===, !==)
+- 논리 연산 (&&, ||, !)
+- 삼항 연산자 (? :)
+- 배열 리터럴 및 객체 리터럴
 - 내장 함수 호출 (min, max, abs, round, floor, ceil)
-- 사용자 정의 함수 호출 지원
+- 사용자 정의 함수 호출 지원 (화이트리스트 방식)
 - 괄호를 사용한 복잡한 표현식
 - 안전한 평가 (no eval, no new Function)
 
@@ -45,12 +49,14 @@ const template = "안녕하세요, {{name}}님. 당신의 나이는 {{age}}세�
                  "5년 후의 나이는 {{age + 5}}세입니다. " +
                  "나이의 제곱근은 {{round(abs(age) ^ 0.5)}}입니다. " +
                  "첫 번째 친구의 이름은 {{friends[0].name}}이고, " +
-                 "가장 나이 많은 친구는 {{max(friends[0].age, friends[1].age)}}세입니다.";
+                 "가장 나이 많은 친구는 {{max(friends[0].age, friends[1].age)}}세입니다. " +
+                 "사용자 정의 함수 결과: {{customFunc(age)}}세입니다. " +
+                 "복잡한 계산: {{complexCalc(age, 10)}}입니다.";
 ```
 
-### 3. 데이터 객체 준비
+### 3. 데이터 객체 및 허용된 함수 준비
 
-템플릿에서 사용할 변수들을 포함하는 데이터 객체를 준비합니다.
+템플릿에서 사용할 변수들을 포함하는 데이터 객체와, 템플릿에서 호출을 허용할 함수들을 포함하는 `allowedFunctions` 객체를 준비합니다.
 
 ```javascript
 const data = {
@@ -64,14 +70,22 @@ const data = {
     { name: "이영희", age: 32 }
   ]
 };
+
+// 템플릿에서 호출을 허용할 사용자 정의 함수들을 정의합니다.
+// 이 객체에 명시적으로 정의된 함수만 템플릿 내에서 호출될 수 있습니다.
+const allowedFunctions = {
+  customFunc: (age) => age * 1.5,
+  complexCalc: (a, b) => (a + b) * 2,
+  // 여기에 안전하다고 판단되는 다른 함수들을 추가합니다.
+};
 ```
 
 ### 4. 템플릿 파싱 및 결과 출력
 
-`parseTemplateString` 함수를 사용하여 템플릿을 파싱하고 결과를 출력합니다.
+`parseTemplateString` 함수를 사용하여 템플릿을 파싱하고 결과를 출력합니다. `allowedFunctions` 객체를 세 번째 인자로 전달합니다.
 
 ```javascript
-const result = parseTemplateString(template, data);
+const result = parseTemplateString(template, data, allowedFunctions);
 console.log(result);
 ```
 
@@ -84,6 +98,9 @@ console.log(result);
 - 나눗셈: `/`
 - 모듈로(나머지): `%`
 - 거듭제곱: `^`
+- 비교: `==`, `!=`, `<`, `<=`, `>`, `>=`, `===`, `!==`
+- 논리: `&&`, `||`, `!`
+- 삼항 연산자: `? :`
 
 ### 내장 함수
 - `min(a, b, ...)`: 최솟값 반환
@@ -93,32 +110,36 @@ console.log(result);
 - `floor(x)`: 내림
 - `ceil(x)`: 올림
 
-### 사용자 정의 함수
-- data 객체에 함수를 전달하면 템플릿에서 호출 가능
-- 예시: `data.customFunc = (x) => x * 2`, 템플릿에서 `{{customFunc(age)}}` 사용
+### 사용자 정의 함수 (보안 강화)
+
+`parseTemplateString` 함수에 세 번째 인자로 `allowedFunctions` 객체를 전달하여 템플릿 내에서 호출할 수 있는 사용자 정의 함수를 명시적으로 허용합니다. `data` 객체에 포함된 함수는 더 이상 템플릿에서 직접 호출되지 않습니다. 이는 임의 코드 실행을 방지하여 보안을 강화합니다.
 
 ```javascript
-const data = {
-  name: "홍길동",
-  age: 30,
-  customFunc: (age) => age * 1.5,
-  complexCalc: (a, b) => (a + b) * 2
+// 템플릿에서 호출을 허용할 함수 목록
+const mySafeFunctions = {
+  greet: (name) => `Hello, ${name}`,
+  calculate: (x, y) => x * y,
 };
 
-const template = "나이: {{age}}세, 사용자 정의 함수 결과: {{customFunc(age)}}세";
+const data = { userName: "Alice" };
+const template = "{{ greet(userName) }}. Result: {{ calculate(5, 10) }}";
+
+// parseTemplateString 호출 시 allowedFunctions를 전달
+const result = parseTemplateString(template, data, mySafeFunctions);
+console.log(result); // 출력: "Hello, Alice. Result: 50"
 ```
 
 ### 배열 및 객체 접근
-- 배열 인덱싱: `array[index]`
-- 객체 속성 접근: `object.property`
+- 배열 인덱싱: `array[index]` (범위를 벗어나면 `undefined` 반환)
+- 객체 속성 접근: `object.property` (존재하지 않으면 `undefined` 반환)
 - 배열 요소의 속성 접근: `array[index].property`
 
 ## 주의사항
 
 - 템플릿 내의 표현식은 `{{ }}` 안에 작성해야 합니다.
-- 존재하지 않는 변수나 함수를 참조하면 오류가 발생합니다.
-- 사용자 정의 함수를 지원하며, data 객체에 함수를 등록하여 사용할 수 있습니다.
-- 배열 인덱스가 유효한 범위를 벗어나면 오류가 발생합니다.
+- 존재하지 않는 변수를 참조하면 오류가 발생합니다.
+- `allowedFunctions`에 명시적으로 등록되지 않은 함수는 템플릿 내에서 호출할 수 없습니다. `data` 객체에 함수를 포함하더라도 실행되지 않습니다.
+- 잘못된 형식의 숫자 리터럴 (예: `1.2.3`)은 파싱 오류를 발생시킵니다.
 
 ## 에러 처리
 
