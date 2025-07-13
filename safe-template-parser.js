@@ -333,6 +333,8 @@ class Interpreter {
 
   visitFunctionCall(node) {
     const args = node.arguments.map((arg) => this.visit(arg));
+    
+    // First check for built-in functions
     switch (node.name.toLowerCase()) {
       case "min":
         return Math.min(...args);
@@ -346,9 +348,19 @@ class Interpreter {
         return Math.floor(args[0]);
       case "ceil":
         return Math.ceil(args[0]);
-      default:
-        throw new Error(`Unknown function: ${node.name}`);
     }
+    
+    // Then check for user-defined functions in data
+    try {
+      const func = this.getValueFromData(node.name, this.data);
+      if (typeof func === 'function') {
+        return func(...args);
+      }
+    } catch (error) {
+      // Function not found in data, continue to error
+    }
+    
+    throw new Error(`Unknown function: ${node.name}`);
   }
 
   getValueFromData(key, data) {
@@ -409,7 +421,9 @@ export { parseTemplateString };
 //   "10년 전의 나이는 {{age - 10}}세였습니다. " +
 //   "나이를 2배로 하면 {{age * 2}}세입니다. " +
 //   "나이의 제곱근은 {{round(abs(age) ^ 0.5)}}입니다. " +
-//   "당신과 친구들 중 가장 나이가 많은 사람은 {{max(age, friends[0].age, friends[1].age)}}세입니다.";
+//   "당신과 친구들 중 가장 나이가 많은 사람은 {{max(age, friends[0].age, friends[1].age)}}세입니다. " +
+//   "사용자 정의 함수 결과: {{customFunc(age)}}세입니다. " +
+//   "복잡한 계산: {{complexCalc(age, 10)}}입니다.";
 
 // const data = {
 //   name: "홍길동",
@@ -421,6 +435,8 @@ export { parseTemplateString };
 //     { name: "김철수", age: 28 },
 //     { name: "이영희", age: 35 }
 //   ],
+//   customFunc: (age) => age * 1.5,
+//   complexCalc: (a, b) => (a + b) * 2
 // };
 
 // const result = parseTemplateString(template, data);

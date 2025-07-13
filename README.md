@@ -19,7 +19,8 @@ npm install safe-template-parser
 - 변수 참조 및 중첩 객체 속성 접근
 - 배열 인덱싱 및 배열 요소의 속성 접근
 - 기본 산술 연산 (+, -, *, /, %, ^)
-- 함수 호출 (min, max, abs, round, floor, ceil)
+- 내장 함수 호출 (min, max, abs, round, floor, ceil)
+- 사용자 정의 함수 호출 지원
 - 괄호를 사용한 복잡한 표현식
 - 안전한 평가 (no eval, no new Function)
 
@@ -84,13 +85,28 @@ console.log(result);
 - 모듈로(나머지): `%`
 - 거듭제곱: `^`
 
-### 함수
+### 내장 함수
 - `min(a, b, ...)`: 최솟값 반환
 - `max(a, b, ...)`: 최댓값 반환
 - `abs(x)`: 절댓값 반환
 - `round(x)`: 반올림
 - `floor(x)`: 내림
 - `ceil(x)`: 올림
+
+### 사용자 정의 함수
+- data 객체에 함수를 전달하면 템플릿에서 호출 가능
+- 예시: `data.customFunc = (x) => x * 2`, 템플릿에서 `{{customFunc(age)}}` 사용
+
+```javascript
+const data = {
+  name: "홍길동",
+  age: 30,
+  customFunc: (age) => age * 1.5,
+  complexCalc: (a, b) => (a + b) * 2
+};
+
+const template = "나이: {{age}}세, 사용자 정의 함수 결과: {{customFunc(age)}}세";
+```
 
 ### 배열 및 객체 접근
 - 배열 인덱싱: `array[index]`
@@ -101,7 +117,7 @@ console.log(result);
 
 - 템플릿 내의 표현식은 `{{ }}` 안에 작성해야 합니다.
 - 존재하지 않는 변수나 함수를 참조하면 오류가 발생합니다.
-- 보안상의 이유로 사용자 정의 함수는 지원하지 않습니다.
+- 사용자 정의 함수를 지원하며, data 객체에 함수를 등록하여 사용할 수 있습니다.
 - 배열 인덱스가 유효한 범위를 벗어나면 오류가 발생합니다.
 
 ## 에러 처리
